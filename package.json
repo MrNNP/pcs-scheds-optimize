@@ -1,0 +1,13 @@
+{
+  "name": "pcs-scheds-optimize",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "scripts": {
+    "watch": "tsc --watch",
+    "nodemon": "nodemon ./dist -e .js",
+    "build": "tsc"
+  },
+  "author": "MrNNP",
+  "license": "ISC"
+}
