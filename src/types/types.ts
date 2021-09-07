@@ -1,20 +1,111 @@
 namespace types{
     export class weightedNodeMap{
+        nodes: Array<node> = [];
+        edges: Array<edge> = [];
+        addNode(newNode:node,weight:number,baseNode:number|node,moreNodes?:Array<addNodeOptions>) {
+            if(typeof this.nodes[newNode.key]  == "object"){
+                throw new Error("Attemped to add new node with same key as existing node");
+            }
+            this.nodes[newNode.key] = newNode;
+
+            if(moreNodes){
+                moreNodes.push({
+                    weight,
+                    baseNode
+                })
+                for (const options of moreNodes) {
+                    let baseKey;
+                    if(typeof options.baseNode == "object"){
+                        try{
+                            if(typeof this.nodes[options.baseNode.key] != "object"){
+                                throw new Error();
+                            }
+                        baseKey = options.baseNode.key
+                        }catch(e){
+                            throw new Error(`baseNode doesnt have a key`)
+                        }
+                    }else if(typeof baseNode == "number"){
+                        baseKey = options.baseNode;
+                    }else{
+                        throw new Error("baseNode is not an object or a number")
+                    }
+                    this.newEdge([newNode.key,baseKey],options.weight,{isAuto:false});
+               
+                }
+            }else{
+                let baseKey
+                if(typeof baseNode == "object"){
+                    try{
+                        if(typeof this.nodes[baseNode.key] != "object"){
+                            throw new Error();
+                        }
+                    baseKey = baseNode.key
+                    }catch(e){
+                        throw new Error('baseNode doesnt have a key')
+                    }
+                }else if(typeof baseNode == "number"){
+                    baseKey = baseNode;
+                }else{
+                    throw new Error("baseNode is not an object or a number")
+                }
+                this.newEdge([newNode.key,baseKey],weight,{isAuto:false});
+
+            }            
+
+            
+        }
         
+        newEdge(nodes:[number,number],weight:number,options?:{extraData?:string,isAuto?:boolean}) {
+                let newedge:edge = {
+                    key:this.edges[this.edges.length-1].key+1,
+                    connectedNodes:nodes,
+                    weight:weight,
+                    extraData:options?options.extraData:undefined
+    
+    
+                } 
+            if(typeof this.edges[newedge.key]!= 'undefined'){
+                throw Error("there is data with the same key as newedge")
+            }
+                if(options){
+                    if(!options.isAuto){
+                        let that = this;
+                        
+                            let typenode = that.nodes[nodes[0]]
+                            typenode.edges?.push(newedge);
+                            typenode.neighbors?.push(that.nodes[nodes[1]])
+                        
+                            typenode = that.nodes[nodes[1]]
+                            typenode.edges?.push(newedge);
+                            typenode.neighbors?.push(that.nodes[nodes[0]])
+                    }
+                }
+            this.edges[newedge.key] = newedge;
+
+        }
+
 
 
     }
 
+    export interface addNodeOptions{
+        weight:number,
+        baseNode:number|node
+        
+
+    }
     export interface node{
         key:number;
         nodeType:"room"|"hallway"|"locker",
         roomData:string|Array<number>|undefined,
-        nodeLocation:Array<number>
+        nodeLocation:[number,number],
+        neighbors?:Array<node>
+        edges?:Array<edge>
     }
 
     export interface edge{
         key:number;
-        connectedNodes:Array<number>
+        connectedNodes:[number,number]
         extraData?:String
         weight:number
     }
