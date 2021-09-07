@@ -1,14 +1,22 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+//@ts-expect-error
+const dijkstra_short_path_1 = __importDefault(require("dijkstra-short-path"));
 var types;
 (function (types) {
-    var weightedNodeMap = /** @class */ (function () {
-        function weightedNodeMap(baseNode) {
+    class weightedNodeMap {
+        constructor(baseNode) {
             this.nodes = [];
             this.edges = [];
+            this.route = new dijkstra_short_path_1.default();
+            baseNode.edges = [];
+            baseNode.neighbors = [];
             this.nodes[baseNode.key] = baseNode;
         }
-        weightedNodeMap.prototype.addNode = function (newNode, weight, baseNode, moreNodes) {
+        addNode(newNode, weight, baseNode, moreNodes) {
             if (typeof this.nodes[newNode.key] == "object") {
                 throw new Error("Attemped to add new node with same key as existing node");
             }
@@ -17,12 +25,11 @@ var types;
             this.nodes[newNode.key] = newNode;
             if (moreNodes) {
                 moreNodes.push({
-                    weight: weight,
-                    baseNode: baseNode
+                    weight,
+                    baseNode
                 });
-                for (var _i = 0, moreNodes_1 = moreNodes; _i < moreNodes_1.length; _i++) {
-                    var options = moreNodes_1[_i];
-                    var baseKey = void 0;
+                for (const options of moreNodes) {
+                    let baseKey;
                     if (typeof options.baseNode == "object") {
                         try {
                             if (typeof this.nodes[options.baseNode.key] != "object") {
@@ -31,7 +38,7 @@ var types;
                             baseKey = options.baseNode.key;
                         }
                         catch (e) {
-                            throw new Error("baseNode doesnt have a key");
+                            throw new Error(`baseNode doesnt have a key`);
                         }
                     }
                     else if (typeof baseNode == "number") {
@@ -44,7 +51,7 @@ var types;
                 }
             }
             else {
-                var baseKey = void 0;
+                let baseKey;
                 if (typeof baseNode == "object") {
                     try {
                         if (typeof this.nodes[baseNode.key] != "object") {
@@ -64,10 +71,9 @@ var types;
                 }
                 this.newEdge([newNode.key, baseKey], weight, { isAuto: false });
             }
-        };
-        weightedNodeMap.prototype.newEdge = function (nodes, weight, options) {
-            var _a, _b, _c, _d;
-            var newedge = {
+        }
+        newEdge(nodes, weight, options) {
+            let newedge = {
                 key: this.newEdgeKey(),
                 connectedNodes: nodes,
                 weight: weight,
@@ -78,56 +84,53 @@ var types;
             }
             if (options) {
                 if (!options.isAuto) {
-                    var typenode = this.nodes[nodes[0]];
-                    (_a = typenode.edges) === null || _a === void 0 ? void 0 : _a.push(newedge);
-                    (_b = typenode.neighbors) === null || _b === void 0 ? void 0 : _b.push(this.nodes[nodes[1]]);
-                    typenode = this.nodes[nodes[1]];
-                    (_c = typenode.edges) === null || _c === void 0 ? void 0 : _c.push(newedge);
-                    (_d = typenode.neighbors) === null || _d === void 0 ? void 0 : _d.push(this.nodes[nodes[0]]);
-                    console.log(typenode);
+                    let typenode = this.nodes[nodes[0]];
+                    typenode.edges?.push(newedge);
+                    typenode.neighbors?.push(this.nodes[nodes[1]]);
+                    let typenode2 = this.nodes[nodes[1]];
+                    //@ts-expect-error
+                    typenode2.edges.push(newedge);
+                    //@ts-expect-error
+                    typenode2.neighbors.push(this.nodes[nodes[0]]);
                 }
             }
             this.edges[newedge.key] = newedge;
-        };
-        weightedNodeMap.prototype.newEdgeKey = function () {
+        }
+        newEdgeKey() {
             if (this.edges.length > 0) {
                 return this.edges[this.edges.length - 1].key + 1;
             }
             else {
                 return 0;
             }
-        };
-        weightedNodeMap.prototype.removeNode = function (nodeKey) {
-            var _this = this;
-            var _a, _b;
-            var node = this.nodes[nodeKey];
-            (_a = node.neighbors) === null || _a === void 0 ? void 0 : _a.forEach(function (noode) {
-                var _a;
-                noode.neighbors = (_a = noode.neighbors) === null || _a === void 0 ? void 0 : _a.filter(function (nooode) { return nooode != node; });
+        }
+        removeNode(nodeKey) {
+            let node = this.nodes[nodeKey];
+            node.neighbors?.forEach((noode) => {
+                noode.neighbors = noode.neighbors?.filter(nooode => nooode != node);
             });
-            (_b = node.edges) === null || _b === void 0 ? void 0 : _b.forEach(function (edgee) {
-                _this.removeEdge(edgee);
+            node.edges?.forEach((edgee) => {
+                this.removeEdge(edgee);
             });
-        };
-        weightedNodeMap.prototype.removeEdge = function (edge) {
-            var nodes = [this.nodes[edge.connectedNodes[0]], this.nodes[edge.connectedNodes[1]]];
-            nodes.forEach(function (node) {
-                var _a;
-                node.edges = (_a = node.edges) === null || _a === void 0 ? void 0 : _a.filter(function (edgee) { return edgee != edge; });
+        }
+        removeEdge(edge) {
+            let nodes = [this.nodes[edge.connectedNodes[0]], this.nodes[edge.connectedNodes[1]]];
+            nodes.forEach(node => {
+                node.edges = node.edges?.filter(edgee => edgee != edge);
             });
-            this.edges = this.edges.filter(function (edgee) { return edgee != edge; });
-        };
-        weightedNodeMap.prototype.export = function (returnString) {
+            this.edges = this.edges.filter(edgee => edgee != edge);
+        }
+        export(returnString) {
             if (returnString) {
-                var returnData = {
+                let returnData = {
                     nodes: this.nodes,
                     edges: this.edges
                 };
-                returnData.nodes.map(function (node) {
-                    var returnvals = node;
+                returnData.nodes.map(node => {
+                    let returnvals = node;
                     if (node.edges != undefined && node.neighbors != undefined) {
-                        returnvals.neighbors = node.neighbors.map(function (node) { return node.key; });
-                        returnvals.edges = node.edges.map(function (edge) { return edge.key; });
+                        returnvals.neighbors = node.neighbors.map(node => node.key);
+                        returnvals.edges = node.edges.map(edge => edge.key);
                     }
                     return returnvals;
                 });
@@ -139,10 +142,10 @@ var types;
                     edges: this.edges
                 };
             }
-        };
-        weightedNodeMap.prototype.import = function (data) {
+        }
+        import(data) {
             if (typeof data == "string") {
-                var dataObject = JSON.parse(data);
+                let dataObject = JSON.parse(data);
                 if (dataObject.nodes && dataObject.edges) {
                     this.nodes = dataObject.nodes;
                     this.edges = dataObject.edges;
@@ -155,35 +158,41 @@ var types;
                 this.nodes = data.nodes;
                 this.edges = data.edges;
             }
-        };
-        return weightedNodeMap;
-    }());
+        }
+        addDataToPathFind(data) {
+            let nodemapData;
+            if (data) {
+                nodemapData = data;
+            }
+            else {
+                nodemapData = {
+                    nodes: this.nodes,
+                    edges: this.edges
+                };
+            }
+            nodemapData.route = this.route;
+            nodemapData.nodes.forEach(node => {
+                let connectedNodes = node.edges?.map(edge => {
+                    return [
+                        `a${edge.connectedNodes.filter(nodekey => nodekey != node.key)[0]}a`,
+                        edge.weight
+                    ];
+                });
+                if (connectedNodes) {
+                    //@ts-expect-error
+                    nodemapData.route.addNode(`a${node.key}a`, new Map([...connectedNodes]));
+                }
+            });
+        }
+        findPath(node1, node2) {
+            this.addDataToPathFind();
+            console.log('data added');
+            let results = this.route.path(`a${node1}a`, `a${node2}a`);
+            console.log('path found');
+            results.path = results.path.map((point) => point.replace('a', '')).map((point) => point.replace('a', ''));
+            return results;
+        }
+    }
     types.weightedNodeMap = weightedNodeMap;
 })(types || (types = {}));
 exports.default = types;
-//nodemap to add:
-/*
-TODO:make storage/way to maintain map in memory, preferable with least memory usage, also json compatible
-TODO:make way to add data to map
-TODO: add distance algorithum
-TODO: remove once done
-
-Brainstorming:
-
-seperate data into edges and points
-
-points will have a key, and data
-
-key will be and assigned number to the room, and a incremented number for hallway nodes
-
-data will include,
-whether its a room or hallway or locker, if room, then room number *string*. if locker, locker range array. if hallway, nothing
-the points coordinates on a map of school (not used at the moment but can be used in a visulization)
-
-edges will have a key, and 2 point keys, and a weight value
-
-
-units will be in meters
-
-
-*/ 

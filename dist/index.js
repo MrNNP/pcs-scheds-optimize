@@ -3,8 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var types_1 = __importDefault(require("./types/types"));
-var nodemap = new types_1.default.weightedNodeMap({
+const types_1 = __importDefault(require("./types/types"));
+let nodemap = new types_1.default.weightedNodeMap({
     key: 0,
     nodeType: "hallway",
     roomData: undefined,
@@ -21,7 +21,38 @@ nodemap.addNode({
     nodeType: "hallway",
     roomData: undefined,
     nodeLocation: [100, 220]
-}, 10, 0, [
+}, 10, 0);
+nodemap.addNode({
+    key: 3,
+    nodeType: "hallway",
+    roomData: undefined,
+    nodeLocation: [100, 220]
+}, 10, 1, [
     { weight: 10, baseNode: 1 }
 ]);
-console.log(nodemap.export(true));
+nodemap.addNode({
+    key: 4,
+    nodeType: "hallway",
+    roomData: undefined,
+    nodeLocation: [100, 220]
+}, 10, 2, [
+    { weight: 10, baseNode: 1 }
+]);
+nodemap.addNode({
+    key: 5,
+    nodeType: "hallway",
+    roomData: undefined,
+    nodeLocation: [100, 220]
+}, 10, 1, [
+    { weight: 10, baseNode: 1 }
+]);
+nodemap.addNode({
+    key: 6,
+    nodeType: "hallway",
+    roomData: undefined,
+    nodeLocation: [100, 220]
+}, 10, 1, [
+    { weight: 10, baseNode: 3 }
+]);
+console.log(nodemap.findPath(2, 6));
+console.log('done running');

@@ -18,10 +18,39 @@ nodemap.addNode({
     nodeType:"hallway",
     roomData:undefined,
     nodeLocation:[100,220]
-},10,0,[
+},10,0)
+nodemap.addNode({
+    key:3,
+    nodeType:"hallway",
+    roomData:undefined,
+    nodeLocation:[100,220]
+},10,1,[
     {weight:10,baseNode:1}
 ])
+nodemap.addNode({
+    key:4,
+    nodeType:"hallway",
+    roomData:undefined,
+    nodeLocation:[100,220]
+},10,2,[
+    {weight:10,baseNode:1}
+])
+nodemap.addNode({
+    key:5,
+    nodeType:"hallway",
+    roomData:undefined,
+    nodeLocation:[100,220]
+},10,1,[
+    {weight:10,baseNode:1}
+])
+nodemap.addNode({
+    key:6,
+    nodeType:"hallway",
+    roomData:undefined,
+    nodeLocation:[100,220]
+},10,1,[
+    {weight:10,baseNode:3}
+])
 
-
-
-console.log(nodemap.export(true));
+console.log(nodemap.findPath(2,6));
+console.log('done running');

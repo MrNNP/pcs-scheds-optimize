@@ -1,12 +1,17 @@
 //@ts-expect-error
-import * as  graph from 'dijkstra-short-path';
+import Graph from 'dijkstra-short-path';
 
 
 namespace types{
     export class weightedNodeMap implements weightedNodeMapData{
         nodes: Array<node> = [];
         edges: Array<edge> = [];
+        private route = new Graph();
+
         constructor(baseNode:node){
+            baseNode.edges = []
+            baseNode.neighbors = []
+          
             this.nodes[baseNode.key] = baseNode;
         }
         addNode(newNode:node,weight:number,baseNode:number|node,moreNodes?:Array<addNodeOptions>) {
@@ -89,10 +94,12 @@ namespace types{
 
 
 
-                            typenode = this.nodes[nodes[1]]
-                            typenode.edges?.push(newedge);
-                            typenode.neighbors?.push(this.nodes[nodes[0]])
-                            console.log(typenode);
+                           let typenode2 = this.nodes[nodes[1]]
+                            //@ts-expect-error
+                            typenode2.edges.push(newedge);
+                            //@ts-expect-error
+                            typenode2.neighbors.push(this.nodes[nodes[0]])
+                        
 
                     }
                 }
@@ -181,12 +188,62 @@ namespace types{
             
             
         }
+
+        private addDataToPathFind(data?:weightedNodeMapData){
+            let nodemapData:weightedNodeMapDataRoute;
+            if(data){
+                nodemapData = data;
+            } else{
+                nodemapData = {
+                    nodes:this.nodes,
+                    edges:this.edges
+                }
+             
+            }
+            
+            nodemapData.route = this.route;
+            nodemapData.nodes.forEach(node=>{
+                
+             let connectedNodes = node.edges?.map(edge=>{
+                    return [
+                       `a${edge.connectedNodes.filter(nodekey=>nodekey!=node.key)[0]}a`,
+                        edge.weight
+                    ]
+                })
+            if(connectedNodes){
+                //@ts-expect-error
+                nodemapData.route.addNode(`a${node.key}a`,new Map([...connectedNodes]))
+            }
+
+
+            })
+
+            
+
+
+        }
+
+        findPath(node1:number,node2:number):pathFindData{
+            this.addDataToPathFind();
+            console.log('data added')
+            let results = this.route.path(`a${node1}a`,`a${node2}a`);
+            console.log('path found')
+            results.path = results.path.map((point:string)=>point.replace('a','')).map((point:string)=>point.replace('a',''))
+
+            return results
+        }
     }
 
+    export interface weightedNodeMapDataRoute extends weightedNodeMapData{
+        nodes:Array<node>,
+        edges:Array<edge>,
+        route?:any
+    }
     export interface weightedNodeMapData{
         nodes:Array<node>
         edges:Array<edge>
     }
+    
     export interface addNodeOptions{
         weight:number,
         baseNode:number|node
@@ -194,6 +251,10 @@ namespace types{
 
     }
 
+    export interface pathFindData{
+        cost:number,
+        path:Array<any>
+    }
     export interface nodeExport extends node{
         neighbors:Array<node>
         edges:Array<edge>
@@ -219,29 +280,3 @@ namespace types{
 
 export default types;
 
-//nodemap to add:
-/*
-TODO:make storage/way to maintain map in memory, preferable with least memory usage, also json compatible
-TODO:make way to add data to map
-TODO: add distance algorithum
-TODO: remove once done
-
-Brainstorming:
-
-seperate data into edges and points
-
-points will have a key, and data
-
-key will be and assigned number to the room, and a incremented number for hallway nodes
-
-data will include, 
-whether its a room or hallway or locker, if room, then room number *string*. if locker, locker range array. if hallway, nothing
-the points coordinates on a map of school (not used at the moment but can be used in a visulization) 
-
-edges will have a key, and 2 point keys, and a weight value
-
-
-units will be in meters
-
-
-*/
