@@ -12,6 +12,10 @@ var types;
             if (typeof this.nodes[newNode.key] == "object") {
                 throw new Error("Attemped to add new node with same key as existing node");
             }
+            if (!newNode.edges || !newNode.neighbors) {
+                newNode.edges = [];
+                newNode.neighbors = [];
+            }
             this.nodes[newNode.key] = newNode;
             if (moreNodes) {
                 moreNodes.push({
@@ -66,7 +70,7 @@ var types;
         weightedNodeMap.prototype.newEdge = function (nodes, weight, options) {
             var _a, _b, _c, _d;
             var newedge = {
-                key: this.edges[this.edges.length - 1].key + 1,
+                key: this.newEdgeKey(),
                 connectedNodes: nodes,
                 weight: weight,
                 extraData: options ? options.extraData : undefined
@@ -76,16 +80,24 @@ var types;
             }
             if (options) {
                 if (!options.isAuto) {
-                    var that = this;
-                    var typenode = that.nodes[nodes[0]];
+                    var typenode = this.nodes[nodes[0]];
                     (_a = typenode.edges) === null || _a === void 0 ? void 0 : _a.push(newedge);
-                    (_b = typenode.neighbors) === null || _b === void 0 ? void 0 : _b.push(that.nodes[nodes[1]]);
-                    typenode = that.nodes[nodes[1]];
+                    (_b = typenode.neighbors) === null || _b === void 0 ? void 0 : _b.push(this.nodes[nodes[1]]);
+                    console.log(typenode);
+                    typenode = this.nodes[nodes[1]];
                     (_c = typenode.edges) === null || _c === void 0 ? void 0 : _c.push(newedge);
-                    (_d = typenode.neighbors) === null || _d === void 0 ? void 0 : _d.push(that.nodes[nodes[0]]);
+                    (_d = typenode.neighbors) === null || _d === void 0 ? void 0 : _d.push(this.nodes[nodes[0]]);
                 }
             }
             this.edges[newedge.key] = newedge;
+        };
+        weightedNodeMap.prototype.newEdgeKey = function () {
+            if (this.edges.length > 0) {
+                return this.edges[this.edges.length - 1].key + 1;
+            }
+            else {
+                return 0;
+            }
         };
         weightedNodeMap.prototype.removeNode = function (nodeKey) {
             var _this = this;
@@ -106,6 +118,45 @@ var types;
                 node.edges = (_a = node.edges) === null || _a === void 0 ? void 0 : _a.filter(function (edgee) { return edgee != edge; });
             });
             this.edges = this.edges.filter(function (edgee) { return edgee != edge; });
+        };
+        weightedNodeMap.prototype.export = function (returnString) {
+            if (returnString) {
+                var returnData = {
+                    nodes: this.nodes,
+                    edges: this.edges
+                };
+                returnData.nodes.map(function (node) {
+                    var returnvals = node;
+                    if (node.edges != undefined && node.neighbors != undefined) {
+                        returnvals.neighbors = node.neighbors.map(function (node) { return node.key; });
+                        returnvals.edges = node.edges.map(function (edge) { return edge.key; });
+                    }
+                    return returnvals;
+                });
+                return JSON.stringify(returnData);
+            }
+            else {
+                return {
+                    nodes: this.nodes,
+                    edges: this.edges
+                };
+            }
+        };
+        weightedNodeMap.prototype.import = function (data) {
+            if (typeof data == "string") {
+                var dataObject = JSON.parse(data);
+                if (dataObject.nodes && dataObject.edges) {
+                    this.nodes = dataObject.nodes;
+                    this.edges = dataObject.edges;
+                }
+                else {
+                    throw new Error("imported data does not have the required nodes and/or edges property");
+                }
+            }
+            else {
+                this.nodes = data.nodes;
+                this.edges = data.edges;
+            }
         };
         return weightedNodeMap;
     }());
