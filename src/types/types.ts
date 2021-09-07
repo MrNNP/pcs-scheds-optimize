@@ -2,6 +2,9 @@ namespace types{
     export class weightedNodeMap{
         nodes: Array<node> = [];
         edges: Array<edge> = [];
+        constructor(baseNode:node){
+            this.nodes[baseNode.key] = baseNode;
+        }
         addNode(newNode:node,weight:number,baseNode:number|node,moreNodes?:Array<addNodeOptions>) {
             if(typeof this.nodes[newNode.key]  == "object"){
                 throw new Error("Attemped to add new node with same key as existing node");
@@ -84,7 +87,24 @@ namespace types{
 
         }
 
+        removeNode(nodeKey:number){
+            let node = this.nodes[nodeKey];
+            node.neighbors?.forEach((noode:node)=>{
+               noode.neighbors = noode.neighbors?.filter(nooode=>nooode!=node)
+            })
+            node.edges?.forEach((edgee:edge)=>{
+                this.removeEdge(edgee);
+            })
+        }
 
+        removeEdge(edge:edge){
+            let nodes = [this.nodes[edge.connectedNodes[0]],this.nodes[edge.connectedNodes[1]]]
+            nodes.forEach(node=>{
+                node.edges = node.edges?.filter(edgee=>edgee!=edge)
+            })
+
+            this.edges = this.edges.filter(edgee=>edgee!=edge);
+        }
 
     }
 

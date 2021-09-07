@@ -3,9 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var types;
 (function (types) {
     var weightedNodeMap = /** @class */ (function () {
-        function weightedNodeMap() {
+        function weightedNodeMap(baseNode) {
             this.nodes = [];
             this.edges = [];
+            this.nodes[baseNode.key] = baseNode;
         }
         weightedNodeMap.prototype.addNode = function (newNode, weight, baseNode, moreNodes) {
             if (typeof this.nodes[newNode.key] == "object") {
@@ -85,6 +86,26 @@ var types;
                 }
             }
             this.edges[newedge.key] = newedge;
+        };
+        weightedNodeMap.prototype.removeNode = function (nodeKey) {
+            var _this = this;
+            var _a, _b;
+            var node = this.nodes[nodeKey];
+            (_a = node.neighbors) === null || _a === void 0 ? void 0 : _a.forEach(function (noode) {
+                var _a;
+                noode.neighbors = (_a = noode.neighbors) === null || _a === void 0 ? void 0 : _a.filter(function (nooode) { return nooode != node; });
+            });
+            (_b = node.edges) === null || _b === void 0 ? void 0 : _b.forEach(function (edgee) {
+                _this.removeEdge(edgee);
+            });
+        };
+        weightedNodeMap.prototype.removeEdge = function (edge) {
+            var nodes = [this.nodes[edge.connectedNodes[0]], this.nodes[edge.connectedNodes[1]]];
+            nodes.forEach(function (node) {
+                var _a;
+                node.edges = (_a = node.edges) === null || _a === void 0 ? void 0 : _a.filter(function (edgee) { return edgee != edge; });
+            });
+            this.edges = this.edges.filter(function (edgee) { return edgee != edge; });
         };
         return weightedNodeMap;
     }());
