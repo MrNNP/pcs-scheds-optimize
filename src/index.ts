@@ -53,4 +53,5 @@ nodemap.addNode({
 ])
 
 console.log(nodemap.findPath(2,6));
+nodemap.saveDataToFile();
 console.log('done running');

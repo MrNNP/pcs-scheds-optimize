@@ -1,6 +1,6 @@
 //@ts-expect-error
 import Graph from 'dijkstra-short-path';
-
+import fs from 'fs';
 
 namespace types{
     export class weightedNodeMap implements weightedNodeMapData{
@@ -231,6 +231,10 @@ namespace types{
             results.path = results.path.map((point:string)=>point.replace('a','')).map((point:string)=>point.replace('a',''))
 
             return results
+        }
+
+        saveDataToFile(filename?:string){
+            fs.writeFileSync(filename?filename:"weightedNodeMap.json",(this.export(true) as unknown as string))
         }
     }
 

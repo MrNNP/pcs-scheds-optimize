@@ -12,5 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "dijkstra-short-path": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^16.7.13"
   }
 }

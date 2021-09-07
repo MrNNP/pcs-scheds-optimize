@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 //@ts-expect-error
 const dijkstra_short_path_1 = __importDefault(require("dijkstra-short-path"));
+const fs_1 = __importDefault(require("fs"));
 var types;
 (function (types) {
     class weightedNodeMap {
@@ -191,6 +192,9 @@ var types;
             console.log('path found');
             results.path = results.path.map((point) => point.replace('a', '')).map((point) => point.replace('a', ''));
             return results;
+        }
+        saveDataToFile(filename) {
+            fs_1.default.writeFileSync(filename ? filename : "weightedNodeMap.json", this.export(true));
         }
     }
     types.weightedNodeMap = weightedNodeMap;

@@ -55,4 +55,5 @@ nodemap.addNode({
     { weight: 10, baseNode: 3 }
 ]);
 console.log(nodemap.findPath(2, 6));
+nodemap.saveDataToFile();
 console.log('done running');
