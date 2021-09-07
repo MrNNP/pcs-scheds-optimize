@@ -9,5 +9,8 @@
     "build": "tsc"
   },
   "author": "MrNNP",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "dijkstra-short-path": "^1.0.3"
+  }
 }

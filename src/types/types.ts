@@ -1,3 +1,7 @@
+//@ts-expect-error
+import * as  graph from 'dijkstra-short-path';
+
+
 namespace types{
     export class weightedNodeMap implements weightedNodeMapData{
         nodes: Array<node> = [];
@@ -9,11 +13,10 @@ namespace types{
             if(typeof this.nodes[newNode.key]  == "object"){
                 throw new Error("Attemped to add new node with same key as existing node");
             }
-            if(!newNode.edges||!newNode.neighbors){
+         
                 newNode.edges = []
                 newNode.neighbors = []
-            }
-
+         
             this.nodes[newNode.key] = newNode;
 
             if(moreNodes){
@@ -83,13 +86,14 @@ namespace types{
                         typenode.edges?.push(newedge);
                         typenode.neighbors?.push(this.nodes[nodes[1]])
                         
-                        console.log(typenode);
 
 
 
                             typenode = this.nodes[nodes[1]]
                             typenode.edges?.push(newedge);
                             typenode.neighbors?.push(this.nodes[nodes[0]])
+                            console.log(typenode);
+
                     }
                 }
             this.edges[newedge.key] = newedge;
@@ -143,7 +147,7 @@ namespace types{
 
                     }
                     
-                    return returnvals; 
+                    return returnvals;
                 })
 
 

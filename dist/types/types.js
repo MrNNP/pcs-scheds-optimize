@@ -12,10 +12,8 @@ var types;
             if (typeof this.nodes[newNode.key] == "object") {
                 throw new Error("Attemped to add new node with same key as existing node");
             }
-            if (!newNode.edges || !newNode.neighbors) {
-                newNode.edges = [];
-                newNode.neighbors = [];
-            }
+            newNode.edges = [];
+            newNode.neighbors = [];
             this.nodes[newNode.key] = newNode;
             if (moreNodes) {
                 moreNodes.push({
@@ -83,10 +81,10 @@ var types;
                     var typenode = this.nodes[nodes[0]];
                     (_a = typenode.edges) === null || _a === void 0 ? void 0 : _a.push(newedge);
                     (_b = typenode.neighbors) === null || _b === void 0 ? void 0 : _b.push(this.nodes[nodes[1]]);
-                    console.log(typenode);
                     typenode = this.nodes[nodes[1]];
                     (_c = typenode.edges) === null || _c === void 0 ? void 0 : _c.push(newedge);
                     (_d = typenode.neighbors) === null || _d === void 0 ? void 0 : _d.push(this.nodes[nodes[0]]);
+                    console.log(typenode);
                 }
             }
             this.edges[newedge.key] = newedge;
