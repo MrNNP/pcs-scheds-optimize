@@ -4,56 +4,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const types_1 = __importDefault(require("./types/types"));
+const readline_1 = __importDefault(require("readline"));
+let int = readline_1.default.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 let nodemap = new types_1.default.weightedNodeMap({
     key: 0,
     nodeType: "hallway",
     roomData: undefined,
-    nodeLocation: [100, 220]
+    nodeLocation: [0, 0]
 });
-nodemap.addNode({
-    key: 1,
-    nodeType: "hallway",
-    roomData: undefined,
-    nodeLocation: [100, 220]
-}, 10, 0);
-nodemap.addNode({
-    key: 2,
-    nodeType: "hallway",
-    roomData: undefined,
-    nodeLocation: [100, 220]
-}, 10, 0);
-nodemap.addNode({
-    key: 3,
-    nodeType: "hallway",
-    roomData: undefined,
-    nodeLocation: [100, 220]
-}, 10, 1, [
-    { weight: 10, baseNode: 1 }
-]);
-nodemap.addNode({
-    key: 4,
-    nodeType: "hallway",
-    roomData: undefined,
-    nodeLocation: [100, 220]
-}, 10, 2, [
-    { weight: 10, baseNode: 1 }
-]);
-nodemap.addNode({
-    key: 5,
-    nodeType: "hallway",
-    roomData: undefined,
-    nodeLocation: [100, 220]
-}, 10, 1, [
-    { weight: 10, baseNode: 1 }
-]);
-nodemap.addNode({
-    key: 6,
-    nodeType: "hallway",
-    roomData: undefined,
-    nodeLocation: [100, 220]
-}, 10, 1, [
-    { weight: 10, baseNode: 3 }
-]);
+function askForData() {
+    int.question("Enter d for Data or E to end:", (ans) => {
+        if (ans === "d") {
+            int.question("What type of node is this?", (ans) => {
+                //try to make interactive map instead of this
+            });
+        }
+    });
+}
 console.log(nodemap.findPath(2, 6));
 nodemap.saveDataToFile();
 console.log('done running');

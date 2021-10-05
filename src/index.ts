@@ -1,56 +1,26 @@
 import types from "./types/types";
+import readline from 'readline';
+let int = readline.createInterface({
+    input:process.stdin,
+    output:process.stdout
+})
+
 let nodemap = new types.weightedNodeMap({
     key:0,
     nodeType:"hallway",
     roomData:undefined,
-    nodeLocation:[100,220]
+    nodeLocation:[0,0]
 })
+function askForData(){
+    int.question("Enter d for Data or E to end:",(ans)=>{
+        if(ans==="d"){
+            int.question("What type of node is this?",(ans)=>{
+                //try to make interactive map instead of this
+            })
+        }
+    })
+}
 
-nodemap.addNode({
-    key:1,
-    nodeType:"hallway",
-    roomData:undefined,
-    nodeLocation:[100,220]
-},10,0)
-
-nodemap.addNode({
-    key:2,
-    nodeType:"hallway",
-    roomData:undefined,
-    nodeLocation:[100,220]
-},10,0)
-nodemap.addNode({
-    key:3,
-    nodeType:"hallway",
-    roomData:undefined,
-    nodeLocation:[100,220]
-},10,1,[
-    {weight:10,baseNode:1}
-])
-nodemap.addNode({
-    key:4,
-    nodeType:"hallway",
-    roomData:undefined,
-    nodeLocation:[100,220]
-},10,2,[
-    {weight:10,baseNode:1}
-])
-nodemap.addNode({
-    key:5,
-    nodeType:"hallway",
-    roomData:undefined,
-    nodeLocation:[100,220]
-},10,1,[
-    {weight:10,baseNode:1}
-])
-nodemap.addNode({
-    key:6,
-    nodeType:"hallway",
-    roomData:undefined,
-    nodeLocation:[100,220]
-},10,1,[
-    {weight:10,baseNode:3}
-])
 
 console.log(nodemap.findPath(2,6));
 nodemap.saveDataToFile();

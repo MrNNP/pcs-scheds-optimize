@@ -1,3 +1,4 @@
+
 //@ts-expect-error
 import Graph from 'dijkstra-short-path';
 import fs from 'fs';
@@ -236,6 +237,11 @@ namespace types{
         saveDataToFile(filename?:string){
             fs.writeFileSync(filename?filename:"weightedNodeMap.json",(this.export(true) as unknown as string))
         }
+
+        importPartialData(data:partialData){
+            let that = this;
+            
+        }
     }
 
     export interface weightedNodeMapDataRoute extends weightedNodeMapData{
@@ -258,6 +264,22 @@ namespace types{
     export interface pathFindData{
         cost:number,
         path:Array<any>
+    }
+
+    export interface partialData{
+        points:Array<partialPointData>,
+        edges:Array<partialEdgeData>
+    }
+    export interface partialPointData{
+        key:number,
+        nodeLocation:[number,number],
+        roomData:string|Array<number>|undefined,
+        nodeType:"room"|"hallway"|"locker"
+    }
+
+    export interface partialEdgeData{
+        connectedNodes:[number,number],
+        weight:number
     }
     export interface nodeExport extends node{
         neighbors:Array<node>

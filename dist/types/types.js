@@ -196,6 +196,9 @@ var types;
         saveDataToFile(filename) {
             fs_1.default.writeFileSync(filename ? filename : "weightedNodeMap.json", this.export(true));
         }
+        importPartialData(data) {
+            let that = this;
+        }
     }
     types.weightedNodeMap = weightedNodeMap;
 })(types || (types = {}));
