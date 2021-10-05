@@ -11,15 +11,6 @@ let nodemap = new types.weightedNodeMap({
     roomData:undefined,
     nodeLocation:[0,0]
 })
-function askForData(){
-    int.question("Enter d for Data or E to end:",(ans)=>{
-        if(ans==="d"){
-            int.question("What type of node is this?",(ans)=>{
-                //try to make interactive map instead of this
-            })
-        }
-    })
-}
 
 
 console.log(nodemap.findPath(2,6));
