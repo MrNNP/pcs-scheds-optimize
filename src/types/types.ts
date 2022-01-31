@@ -142,6 +142,13 @@ namespace types{
             if(!a) throw new Error("no node found with that data");
             return a;
         }
+         getIndexFromData(key:string,):number{
+            
+            let a = this.nodes.findIndex(p=>p.roomData==key)
+        
+            if(a==null) throw new Error("no node found with that data");
+            return a;
+        }
         
         export(returnString?:boolean):weightedNodeMapData|string{
             
@@ -230,14 +237,15 @@ namespace types{
             
 
 
-        }
+        } 
 
-        findPath(node1:number,node2:number):pathFindData{
+        findPath(node1:string,node2:string):pathFindData{
+            let node1key = this.getIndexFromData(node1);
+            let node2key = this.getIndexFromData(node2);
             this.addDataToPathFind();
-            console.log('data added')
-            let results = this.route.path(`a${node1}a`,`a${node2}a`);
-            console.log('path found')
-            results.path = results.path.map((point:string)=>point.replace('a','')).map((point:string)=>point.replace('a',''))
+           
+            let results = this.route.path(`a${node1key}a`,`a${node2key}a`);
+            results.path = results.path.map((point:string)=>point.replace('a','')).map((point:string)=>point.replace('a','')).map((point:string)=>this.nodes[parseInt(point)].roomData);
 
             return results
         }
@@ -258,7 +266,7 @@ namespace types{
                     } as partialPointData;
                 })
 
-                updata.edges = updata.keyedEdges.map((edge:[string,string,number])=>{
+                updata.edges = updata.flattenedEdges.map((edge:[string,string,number])=>{
                     return{
                         connectedNodes:[edge[0],edge[1]],
                         weight:edge[2]
@@ -281,7 +289,7 @@ namespace types{
             let defer:Array<partialEdgeData> = [];
             data.edges.forEach(edge=>{
                 if(utils.nodeExists(edge.connectedNodes[0],newMap)&&utils.nodeExists(edge.connectedNodes[1],newMap)){
-                    newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0],newMap),utils.getKeyFromData(edge.connectedNodes[1],newMap)],edge.weight);    
+                    newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0],newMap),utils.getKeyFromData(edge.connectedNodes[1],newMap)],edge.weight,{isAuto:false});    
                 }else if(utils.nodeExists(edge.connectedNodes[0],newMap)){
                     newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[1],data)),edge.weight,newMap.nodes[utils.getKeyFromData(edge.connectedNodes[0],newMap)]);
                 }else if(utils.nodeExists(edge.connectedNodes[1],newMap)){
@@ -294,7 +302,7 @@ namespace types{
                while(defer.length>0){
                 defer.forEach(edge=>{
                     if(utils.nodeExists(edge.connectedNodes[0],newMap)&&utils.nodeExists(edge.connectedNodes[1],newMap)){
-                        newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0],newMap),utils.getKeyFromData(edge.connectedNodes[1],newMap)],edge.weight);    
+                        newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0],newMap),utils.getKeyFromData(edge.connectedNodes[1],newMap)],edge.weight,{isAuto:false});    
                         defer.splice(defer.indexOf(edge),1);
                     }else if(utils.nodeExists(edge.connectedNodes[0],newMap)){
                         newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[1],data)),edge.weight,newMap.nodes[utils.getKeyFromData(edge.connectedNodes[1],newMap)]);
@@ -317,7 +325,7 @@ namespace types{
     export namespace utils{
         export let keycounter = 0;
         export function fromImageToNode(point:partialPointData):node{
-            console.log(point);
+         
             keycounter++;
             return{
                 key:keycounter,

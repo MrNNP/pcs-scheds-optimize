@@ -127,6 +127,12 @@ var types;
                 throw new Error("no node found with that data");
             return a;
         }
+        getIndexFromData(key) {
+            let a = this.nodes.findIndex(p => p.roomData == key);
+            if (a == null)
+                throw new Error("no node found with that data");
+            return a;
+        }
         export(returnString) {
             if (returnString) {
                 let returnData = {
@@ -192,11 +198,11 @@ var types;
             });
         }
         findPath(node1, node2) {
+            let node1key = this.getIndexFromData(node1);
+            let node2key = this.getIndexFromData(node2);
             this.addDataToPathFind();
-            console.log('data added');
-            let results = this.route.path(`a${node1}a`, `a${node2}a`);
-            console.log('path found');
-            results.path = results.path.map((point) => point.replace('a', '')).map((point) => point.replace('a', ''));
+            let results = this.route.path(`a${node1key}a`, `a${node2key}a`);
+            results.path = results.path.map((point) => point.replace('a', '')).map((point) => point.replace('a', '')).map((point) => this.nodes[parseInt(point)].roomData);
             return results;
         }
         saveDataToFile(filename) {
@@ -213,7 +219,7 @@ var types;
                         nodeType: (node.key.startsWith('_h') ? "hallway" : node.key.startsWith('_l') ? "locker" : "room")
                     };
                 });
-                updata.edges = updata.keyedEdges.map((edge) => {
+                updata.edges = updata.flattenedEdges.map((edge) => {
                     return {
                         connectedNodes: [edge[0], edge[1]],
                         weight: edge[2]
@@ -235,7 +241,7 @@ var types;
                 let defer = [];
                 data.edges.forEach(edge => {
                     if (utils.nodeExists(edge.connectedNodes[0], newMap) && utils.nodeExists(edge.connectedNodes[1], newMap)) {
-                        newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0], newMap), utils.getKeyFromData(edge.connectedNodes[1], newMap)], edge.weight);
+                        newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0], newMap), utils.getKeyFromData(edge.connectedNodes[1], newMap)], edge.weight, { isAuto: false });
                     }
                     else if (utils.nodeExists(edge.connectedNodes[0], newMap)) {
                         newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[1], data)), edge.weight, newMap.nodes[utils.getKeyFromData(edge.connectedNodes[0], newMap)]);
@@ -250,7 +256,7 @@ var types;
                 while (defer.length > 0) {
                     defer.forEach(edge => {
                         if (utils.nodeExists(edge.connectedNodes[0], newMap) && utils.nodeExists(edge.connectedNodes[1], newMap)) {
-                            newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0], newMap), utils.getKeyFromData(edge.connectedNodes[1], newMap)], edge.weight);
+                            newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0], newMap), utils.getKeyFromData(edge.connectedNodes[1], newMap)], edge.weight, { isAuto: false });
                             defer.splice(defer.indexOf(edge), 1);
                         }
                         else if (utils.nodeExists(edge.connectedNodes[0], newMap)) {
@@ -275,7 +281,6 @@ var types;
     (function (utils) {
         utils.keycounter = 0;
         function fromImageToNode(point) {
-            console.log(point);
             utils.keycounter++;
             return {
                 key: utils.keycounter,
