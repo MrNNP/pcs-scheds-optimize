@@ -9,10 +9,10 @@ const fs_1 = __importDefault(require("fs"));
 var types;
 (function (types) {
     class weightedNodeMap {
+        nodes = [];
+        edges = [];
+        route = new dijkstra_short_path_1.default();
         constructor(baseNode) {
-            this.nodes = [];
-            this.edges = [];
-            this.route = new dijkstra_short_path_1.default();
             baseNode.edges = [];
             baseNode.neighbors = [];
             this.nodes[baseNode.key] = baseNode;
@@ -121,6 +121,12 @@ var types;
             });
             this.edges = this.edges.filter(edgee => edgee != edge);
         }
+        getNodeFromData(key) {
+            let a = this.nodes.find(p => p.roomData == key);
+            if (!a)
+                throw new Error("no node found with that data");
+            return a;
+        }
         export(returnString) {
             if (returnString) {
                 let returnData = {
@@ -196,10 +202,107 @@ var types;
         saveDataToFile(filename) {
             fs_1.default.writeFileSync(filename ? filename : "weightedNodeMap.json", this.export(true));
         }
-        importPartialData(data) {
-            let that = this;
+        static importPartialData(data) {
+            if (typeof data == 'string') {
+                let updata = JSON.parse(data);
+                updata.points = updata.keyedNodes.map((node) => {
+                    return {
+                        key: node.key,
+                        nodeLocation: [node.x, node.y],
+                        roomData: undefined,
+                        nodeType: (node.key.startsWith('_h') ? "hallway" : node.key.startsWith('_l') ? "locker" : "room")
+                    };
+                });
+                updata.edges = updata.keyedEdges.map((edge) => {
+                    return {
+                        connectedNodes: [edge[0], edge[1]],
+                        weight: edge[2]
+                    };
+                });
+                const rerun = updata;
+                return weightedNodeMap.importPartialData(rerun);
+            }
+            else {
+                let basenode = data.points[0];
+                if (!basenode)
+                    throw new Error("no base node found in data");
+                let newMap = new weightedNodeMap({
+                    key: 0,
+                    nodeLocation: basenode.nodeLocation,
+                    roomData: basenode.key,
+                    nodeType: basenode.nodeType,
+                });
+                let defer = [];
+                data.edges.forEach(edge => {
+                    if (utils.nodeExists(edge.connectedNodes[0], newMap) && utils.nodeExists(edge.connectedNodes[1], newMap)) {
+                        newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0], newMap), utils.getKeyFromData(edge.connectedNodes[1], newMap)], edge.weight);
+                    }
+                    else if (utils.nodeExists(edge.connectedNodes[0], newMap)) {
+                        newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[1], data)), edge.weight, newMap.nodes[utils.getKeyFromData(edge.connectedNodes[0], newMap)]);
+                    }
+                    else if (utils.nodeExists(edge.connectedNodes[1], newMap)) {
+                        newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[0], data)), edge.weight, newMap.nodes[utils.getKeyFromData(edge.connectedNodes[1], newMap)]);
+                    }
+                    else {
+                        defer.push(edge);
+                    }
+                });
+                while (defer.length > 0) {
+                    defer.forEach(edge => {
+                        if (utils.nodeExists(edge.connectedNodes[0], newMap) && utils.nodeExists(edge.connectedNodes[1], newMap)) {
+                            newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0], newMap), utils.getKeyFromData(edge.connectedNodes[1], newMap)], edge.weight);
+                            defer.splice(defer.indexOf(edge), 1);
+                        }
+                        else if (utils.nodeExists(edge.connectedNodes[0], newMap)) {
+                            newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[1], data)), edge.weight, newMap.nodes[utils.getKeyFromData(edge.connectedNodes[1], newMap)]);
+                            defer.splice(defer.indexOf(edge), 1);
+                        }
+                        else if (utils.nodeExists(edge.connectedNodes[1], newMap)) {
+                            newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[0], data)), edge.weight, newMap.nodes[utils.getKeyFromData(edge.connectedNodes[1], newMap)]);
+                            defer.splice(defer.indexOf(edge), 1);
+                        }
+                        else {
+                            defer.push(edge);
+                        }
+                    });
+                }
+                return newMap;
+            }
         }
     }
     types.weightedNodeMap = weightedNodeMap;
+    let utils;
+    (function (utils) {
+        utils.keycounter = 0;
+        function fromImageToNode(point) {
+            console.log(point);
+            utils.keycounter++;
+            return {
+                key: utils.keycounter,
+                nodeLocation: point.nodeLocation,
+                roomData: point.key,
+                nodeType: point.nodeType,
+            };
+        }
+        utils.fromImageToNode = fromImageToNode;
+        function nodeExists(data, map) {
+            return map.nodes.some(node => node.roomData == data);
+        }
+        utils.nodeExists = nodeExists;
+        function getKeyFromData(data, map) {
+            let possibleNode = map.nodes.find(node => node.roomData == data);
+            if (!possibleNode)
+                throw new Error("no node found with that data");
+            return possibleNode.key;
+        }
+        utils.getKeyFromData = getKeyFromData;
+        function getNodeFromData(key, data) {
+            let a = data.points.find(p => (p.key == key));
+            if (!a)
+                throw new Error("no node found with that data");
+            return a;
+        }
+        utils.getNodeFromData = getNodeFromData;
+    })(utils = types.utils || (types.utils = {}));
 })(types || (types = {}));
 exports.default = types;

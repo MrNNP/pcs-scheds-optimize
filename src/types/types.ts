@@ -135,6 +135,14 @@ namespace types{
             this.edges = this.edges.filter(edgee=>edgee!=edge);
         }
 
+         getNodeFromData(key:string,):node{
+            
+            let a = this.nodes.find(p=>p.roomData==key)
+        
+            if(!a) throw new Error("no node found with that data");
+            return a;
+        }
+        
         export(returnString?:boolean):weightedNodeMapData|string{
             
             if(returnString){
@@ -238,12 +246,109 @@ namespace types{
             fs.writeFileSync(filename?filename:"weightedNodeMap.json",(this.export(true) as unknown as string))
         }
 
-        importPartialData(data:partialData){
-            let that = this;
+      static importPartialData(data:partialData|string):weightedNodeMap{
+            if(typeof data == 'string'){
+                let updata = JSON.parse(data);
+                updata.points = updata.keyedNodes.map((node: { key: string; x: number; y: number;})=>{
+                    return{
+                        key:node.key,
+                        nodeLocation:[node.x,node.y],
+                        roomData:undefined,
+                        nodeType:(node.key.startsWith('_h')?"hallway":node.key.startsWith('_l')?"locker":"room")
+                    } as partialPointData;
+                })
+
+                updata.edges = updata.keyedEdges.map((edge:[string,string,number])=>{
+                    return{
+                        connectedNodes:[edge[0],edge[1]],
+                        weight:edge[2]
+                    } as partialEdgeData;
+                });
+                const rerun:partialData = updata;
+                return weightedNodeMap.importPartialData(rerun);
             
+            }else{
+           
+            let basenode = data.points[0];
+            if(!basenode) throw new Error("no base node found in data");
+                let newMap = new weightedNodeMap({
+                key:0,
+                nodeLocation:basenode.nodeLocation,
+                roomData:basenode.key,
+                nodeType:basenode.nodeType,
+
+            } as node);
+            let defer:Array<partialEdgeData> = [];
+            data.edges.forEach(edge=>{
+                if(utils.nodeExists(edge.connectedNodes[0],newMap)&&utils.nodeExists(edge.connectedNodes[1],newMap)){
+                    newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0],newMap),utils.getKeyFromData(edge.connectedNodes[1],newMap)],edge.weight);    
+                }else if(utils.nodeExists(edge.connectedNodes[0],newMap)){
+                    newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[1],data)),edge.weight,newMap.nodes[utils.getKeyFromData(edge.connectedNodes[0],newMap)]);
+                }else if(utils.nodeExists(edge.connectedNodes[1],newMap)){
+                    newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[0],data)),edge.weight,newMap.nodes[utils.getKeyFromData(edge.connectedNodes[1],newMap)]);
+                }else{
+                    defer.push(edge);
+                }
+                });
+
+               while(defer.length>0){
+                defer.forEach(edge=>{
+                    if(utils.nodeExists(edge.connectedNodes[0],newMap)&&utils.nodeExists(edge.connectedNodes[1],newMap)){
+                        newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0],newMap),utils.getKeyFromData(edge.connectedNodes[1],newMap)],edge.weight);    
+                        defer.splice(defer.indexOf(edge),1);
+                    }else if(utils.nodeExists(edge.connectedNodes[0],newMap)){
+                        newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[1],data)),edge.weight,newMap.nodes[utils.getKeyFromData(edge.connectedNodes[1],newMap)]);
+                        defer.splice(defer.indexOf(edge),1);
+                    }else if(utils.nodeExists(edge.connectedNodes[1],newMap)){
+                        newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[0],data)),edge.weight,newMap.nodes[utils.getKeyFromData(edge.connectedNodes[1],newMap)]);
+                        defer.splice(defer.indexOf(edge),1);
+                    }else{
+                        defer.push(edge);
+                    }
+                    });
+               } 
+            return newMap;
+            
+            
+        }
         }
     }
 
+    export namespace utils{
+        export let keycounter = 0;
+        export function fromImageToNode(point:partialPointData):node{
+            console.log(point);
+            keycounter++;
+            return{
+                key:keycounter,
+                nodeLocation:point.nodeLocation,
+                roomData:point.key,
+                nodeType:point.nodeType,
+
+            } as node;
+
+
+            }
+
+        export function nodeExists(data:string, map:weightedNodeMap):boolean{
+            return map.nodes.some(node=>node.roomData==data);
+        }
+
+        export function getKeyFromData(data:string,map:weightedNodeMap):number{
+            let possibleNode =map.nodes.find(node=>node.roomData==data) 
+            if(!possibleNode) throw new Error("no node found with that data");
+            return possibleNode.key;
+        }
+
+        export function getNodeFromData(key:string,data:partialData):partialPointData{
+            
+            let a:partialPointData|undefined = data.points.find(p=>(p.key==key))
+        
+            if(!a) throw new Error("no node found with that data");
+            return a;
+        }
+        }
+    
     export interface weightedNodeMapDataRoute extends weightedNodeMapData{
         nodes:Array<node>,
         edges:Array<edge>,
@@ -271,14 +376,14 @@ namespace types{
         edges:Array<partialEdgeData>
     }
     export interface partialPointData{
-        key:number,
+        key:string,
         nodeLocation:[number,number],
         roomData:string|Array<number>|undefined,
         nodeType:"room"|"hallway"|"locker"
     }
 
     export interface partialEdgeData{
-        connectedNodes:[number,number],
+        connectedNodes:[string,string],
         weight:number
     }
     export interface nodeExport extends node{
