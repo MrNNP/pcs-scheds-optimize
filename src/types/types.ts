@@ -65,8 +65,11 @@ namespace types{
                 }else{
                     throw new Error("baseNode is not an object or a number")
                 }
+             //   if(this.edges.find(p => (p.connectedNodes[0] == newNode.key)||(p.connectedNodes[1] == baseKey)) != undefined){
                 this.newEdge([newNode.key,baseKey],weight,{isAuto:false});
-
+               // }else{
+                 //   console.log(newNode.key,baseKey);
+                //}
             }            
 
             
@@ -89,17 +92,18 @@ namespace types{
                         
                         
                         let typenode = this.nodes[nodes[0]]
+                       
                         typenode.edges?.push(newedge);
+                       
                         typenode.neighbors?.push(this.nodes[nodes[1]])
+                        
                         
 
 
-
                            let typenode2 = this.nodes[nodes[1]]
-                            //@ts-expect-error
-                            typenode2.edges.push(newedge);
-                            //@ts-expect-error
-                            typenode2.neighbors.push(this.nodes[nodes[0]])
+                            typenode2.edges?.push(newedge);
+                   
+                            typenode2.neighbors?.push(this.nodes[nodes[0]])
                         
 
                     }
@@ -216,11 +220,18 @@ namespace types{
                 }
              
             }
-            
+            console.log(nodemapData.nodes.map(node=>{
+                if(node.edges?.some(edge=>edge.connectedNodes==undefined)){
+                    return node.edges?.map(edge=>edge.connectedNodes);
+                }
+            }));
             nodemapData.route = this.route;
             nodemapData.nodes.forEach(node=>{
                 
              let connectedNodes = node.edges?.map(edge=>{
+               if(typeof edge == 'number'){
+                     edge  = this.edges[edge];
+                }
                     return [
                        `a${edge.connectedNodes.filter(nodekey=>nodekey!=node.key)[0]}a`,
                         edge.weight
@@ -305,13 +316,11 @@ namespace types{
                         newMap.newEdge([utils.getKeyFromData(edge.connectedNodes[0],newMap),utils.getKeyFromData(edge.connectedNodes[1],newMap)],edge.weight,{isAuto:false});    
                         defer.splice(defer.indexOf(edge),1);
                     }else if(utils.nodeExists(edge.connectedNodes[0],newMap)){
-                        newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[1],data)),edge.weight,newMap.nodes[utils.getKeyFromData(edge.connectedNodes[1],newMap)]);
+                        newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[1],data)),edge.weight,newMap.nodes[utils.getKeyFromData(edge.connectedNodes[0],newMap)]);
                         defer.splice(defer.indexOf(edge),1);
                     }else if(utils.nodeExists(edge.connectedNodes[1],newMap)){
                         newMap.addNode(utils.fromImageToNode(utils.getNodeFromData(edge.connectedNodes[0],data)),edge.weight,newMap.nodes[utils.getKeyFromData(edge.connectedNodes[1],newMap)]);
                         defer.splice(defer.indexOf(edge),1);
-                    }else{
-                        defer.push(edge);
                     }
                     });
                } 
