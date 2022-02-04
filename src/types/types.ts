@@ -220,11 +220,7 @@ namespace types{
                 }
              
             }
-            console.log(nodemapData.nodes.map(node=>{
-                if(node.edges?.some(edge=>edge.connectedNodes==undefined)){
-                    return node.edges?.map(edge=>edge.connectedNodes);
-                }
-            }));
+            console;
             nodemapData.route = this.route;
             nodemapData.nodes.forEach(node=>{
                 
@@ -329,9 +325,20 @@ namespace types{
             
         }
         }
+
+        static importData(data:weightedNodeMapData|string):weightedNodeMap{
+            if(typeof data == 'string'){
+            return weightedNodeMap.importData(JSON.parse(data) as weightedNodeMapData);
+            }
+            let map:weightedNodeMap = new weightedNodeMap({key:10,nodeLocation:[0,0],roomData:"test",nodeType:"room"} as node);
+            map.nodes = data.nodes;
+            map.edges = data.edges;
+            return map;
+        }
     }
 
     export namespace utils{
+        export let numForm = new Intl.NumberFormat();
         export let keycounter = 0;
         export function fromImageToNode(point:partialPointData):node{
          
@@ -384,6 +391,7 @@ namespace types{
     }
 
     export interface pathFindData{
+        distance: number;
         cost:number,
         path:Array<any>
     }

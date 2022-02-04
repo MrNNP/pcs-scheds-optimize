@@ -185,11 +185,7 @@ var types;
                     edges: this.edges
                 };
             }
-            console.log(nodemapData.nodes.map(node => {
-                if (node.edges?.some(edge => edge.connectedNodes == undefined)) {
-                    return node.edges?.map(edge => edge.connectedNodes);
-                }
-            }));
+            console;
             nodemapData.route = this.route;
             nodemapData.nodes.forEach(node => {
                 let connectedNodes = node.edges?.map(edge => {
@@ -282,10 +278,20 @@ var types;
                 return newMap;
             }
         }
+        static importData(data) {
+            if (typeof data == 'string') {
+                return weightedNodeMap.importData(JSON.parse(data));
+            }
+            let map = new weightedNodeMap({ key: 10, nodeLocation: [0, 0], roomData: "test", nodeType: "room" });
+            map.nodes = data.nodes;
+            map.edges = data.edges;
+            return map;
+        }
     }
     types.weightedNodeMap = weightedNodeMap;
     let utils;
     (function (utils) {
+        utils.numForm = new Intl.NumberFormat();
         utils.keycounter = 0;
         function fromImageToNode(point) {
             utils.keycounter++;
